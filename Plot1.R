@@ -1,20 +1,22 @@
-## Getting full dataset
-data_full <- read.csv("./Data/household_power_consumption.txt", header=T, sep=';', na.strings="?", 
-                      nrows=2075259, check.names=F, stringsAsFactors=F, comment.char="", quote='\"')
-data_full$Date <- as.Date(data_full$Date, format="%d/%m/%Y")
+##read data file
+rawdata <- "household_power_consumption.txt"
+## save it to a var
+powerplot <- read.table(rawdata, header=T, sep=";")
+## grab date and subset date var
+powerplot$Date <- as.Date(powerplot$Date, format="%d/%m/%Y")
+plot <- powerplot[(powerplot$Date>="2007-02-01") & (powerplot$Date<="2007-02-02"),]
+plot$Global_active_power <- as.numeric(as.character(plot$Global_active_power))
+plot$Global_reactive_power <- as.numeric(as.character(plot$Global_reactive_power))
+plot$Voltage <- as.numeric(as.character(plot$Voltage))
+plot <- transform(plot, timestamp=as.POSIXct(paste(Date, Time)), "%d/%m/%Y %H:%M:%S")
+plot$Sub_metering_1 <- as.numeric(as.character(plot$Sub_metering_1))
+plot$Sub_metering_2 <- as.numeric(as.character(plot$Sub_metering_2))
+plot$Sub_metering_3 <- as.numeric(as.character(plot$Sub_metering_3))
 
-## Subsetting the data
-data <- subset(data_full, subset=(Date >= "2007-02-01" & Date <= "2007-02-02"))
-rm(data_full)
-
-## Converting dates
-datetime <- paste(as.Date(data$Date), data$Time)
-data$Datetime <- as.POSIXct(datetime)
-
-## Plot 1
-hist(data$Global_active_power, main="Global Active Power", 
-     xlab="Global Active Power (kilowatts)", ylab="Frequency", col="Red")
-
-## Saving to file
-dev.copy(png, file="plot1.png", height=480, width=480)
-dev.off()
+plot1 <- function() {
+  hist(plot$Global_active_power, main = paste("Global Active Power"), col="red", xlab="Global Active Power (kilowatts)")
+  dev.copy(png, file="plot1.png", width=480, height=480)
+  dev.off()
+  cat("Plot1.png has been saved in", getwd())
+}
+plot1()
